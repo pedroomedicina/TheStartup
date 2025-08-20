@@ -86,6 +86,16 @@ func TestHeadersParse(t *testing.T) {
 	assert.Contains(t, err.Error(), "invalid character in header key")
 	assert.Equal(t, 0, n)
 	assert.False(t, done)
+
+	// Test: If a header key already exists, it appends the new value to the existing value separated by a comma
+	headers = map[string]string{"host": "localhost:8000"}
+	data = []byte("Host: localhost:42070\r\n\r\n")
+	n, done, err = headers.Parse(data)
+	require.NoError(t, err)
+	require.NotNil(t, headers)
+	assert.Equal(t, "localhost:8000, localhost:42070", headers["host"])
+	assert.Equal(t, 23, n)
+	assert.False(t, done)
 }
 
 func TestHeadersTokenCharacters(t *testing.T) {
