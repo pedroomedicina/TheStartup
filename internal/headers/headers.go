@@ -3,6 +3,7 @@ package headers
 import (
 	"bytes"
 	"fmt"
+	"slices"
 	"strings"
 )
 
@@ -32,10 +33,37 @@ func (h Headers) Parse(data []byte) (n int, done bool, err error) {
 	value := bytes.TrimSpace(parts[1])
 	key = strings.TrimSpace(key)
 
+	if !isValidHeaderKey([]byte(key)) {
+		return 0, false, fmt.Errorf("invalid character in header key: %s", key)
+	}
+
 	h.Set(key, string(value))
 	return crlfIndex + 2, false, nil
 }
 
 func (h Headers) Set(key, value string) {
+	key = strings.ToLower(key)
 	h[key] = value
+}
+
+var tokenChars = []byte{'!', '#', '$', '%', '&', '\'', '*', '+', '-', '.', '^', '_', '`', '|', '~'}
+
+func isValidHeaderKey(data []byte) bool {
+	if len(data) == 0 {
+		return false
+	}
+	for _, c := range data {
+		if !isTokenChar(c) {
+			return false
+		}
+	}
+	return true
+}
+
+func isTokenChar(c byte) bool {
+	if c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c >= '0' && c <= '9' {
+		return true
+	}
+
+	return slices.Contains(tokenChars, c)
 }
