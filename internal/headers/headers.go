@@ -57,6 +57,10 @@ func (h Headers) Get(key string) (string, bool) {
 	return v, ok
 }
 
+func (h Headers) Override(key, value string) {
+	h[strings.ToLower(key)] = value
+}
+
 var tokenChars = []byte{'!', '#', '$', '%', '&', '\'', '*', '+', '-', '.', '^', '_', '`', '|', '~'}
 
 func isValidHeaderKey(data []byte) bool {
